@@ -1,6 +1,7 @@
 "use strict";
 
 import "terminal.css";
+import "./css/index.css";
 import { Elm } from "./Main.elm";
 
 (function () {

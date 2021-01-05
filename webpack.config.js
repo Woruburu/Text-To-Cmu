@@ -6,6 +6,20 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = (env) => {
   const isProd = env.production;
+  var elmUse = [
+    {
+      loader: "elm-webpack-loader",
+      options: {
+        debug: false,
+        optimize: isProd,
+        pathToElm: "node_modules/.bin/elm",
+      },
+    },
+  ];
+  if (!isProd) {
+    var hotLoader = [{ loader: "elm-hot-webpack-loader" }];
+    elmUse = hotLoader.concat(elmUse);
+  }
   return {
     entry: path.resolve(__dirname, "src", "index.js"),
     module: {
@@ -42,7 +56,7 @@ module.exports = (env) => {
       ],
     },
     resolve: {
-      extensions: [".js", ".elm"],
+      extensions: [".js", ".elm", ".css"],
     },
     output: {
       filename: "[id].[hash].js",
