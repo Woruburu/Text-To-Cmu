@@ -2,41 +2,60 @@ module CmuDict exposing (generateResponse, parseDictionary)
 
 import Dict exposing (Dict)
 import Punctuation
+import VowelStrength exposing (VowelStrength)
 
 
-generateResponse : Dict String String -> List String -> List String
-generateResponse dict input =
+generateResponse : Dict String String -> VowelStrength -> Bool -> List String -> List String
+generateResponse dict vowelStrength convertBrackets input =
     List.map
         (\word ->
-            let
-                newWord =
-                    test dict Punctuation.all word
-            in
-            case Dict.get (String.toUpper newWord) dict of
+            case Dict.get (String.toUpper word) dict of
                 Just value ->
-                    "{" ++ value ++ "}"
+                    returnValue vowelStrength value
 
                 Nothing ->
-                    newWord
+                    let
+                        removePunctuation =
+                            splitPunctuation dict Punctuation.all vowelStrength convertBrackets word
+                    in
+                    case Dict.get (String.toUpper removePunctuation) dict of
+                        Just value ->
+                            returnValue vowelStrength value
+
+                        Nothing ->
+                            if convertBrackets then
+                                "[" ++ removePunctuation ++ "]"
+
+                            else
+                                removePunctuation
         )
         input
 
 
-test : Dict String String -> List String -> String -> String
-test dict allPunctuation word =
+returnValue : VowelStrength -> String -> String
+returnValue vowelStrength value =
+    let
+        convert =
+            VowelStrength.convert vowelStrength value
+    in
+    "{" ++ convert ++ "}"
+
+
+splitPunctuation : Dict String String -> List String -> VowelStrength -> Bool -> String -> String
+splitPunctuation dict allPunctuation vowelStrength convertBrackets word =
     case List.head allPunctuation of
         Just punctuation ->
             let
                 newWord =
                     if String.contains punctuation word then
                         String.split punctuation word
-                            |> generateResponse dict
+                            |> generateResponse dict vowelStrength convertBrackets
                             |> String.join punctuation
 
                     else
                         word
             in
-            test dict (Maybe.withDefault [] <| List.tail allPunctuation) newWord
+            splitPunctuation dict (Maybe.withDefault [] <| List.tail allPunctuation) vowelStrength convertBrackets newWord
 
         Nothing ->
             word

@@ -1,6 +1,8 @@
 "use strict";
 
+import "normalize.css";
 import "terminal.css";
+import ClipboardJS from "clipboard";
 import "./css/index.css";
 import { Elm } from "./Main.elm";
 
@@ -11,4 +13,6 @@ import { Elm } from "./Main.elm";
     node: node,
     flags: null,
   });
+
+  new ClipboardJS("#copy-button");
 })();
